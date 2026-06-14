@@ -57,9 +57,14 @@ function ServiceDetailsPage() {
           Cena od {service.price.toLocaleString("sr-RS")} RSD
         </h3>
 
-        <Button as={Link} to="/prijava" variant="danger" size="lg">
-          Zakaži termin
-        </Button>
+        <Button
+  as={Link}
+  to={`/zakazivanje?serviceId=${service.id}`}
+  variant="danger"
+  size="lg"
+>
+  Zakaži termin
+</Button>
       </div>
     </Container>
   );

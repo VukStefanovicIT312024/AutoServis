@@ -33,9 +33,19 @@ function Header() {
             </Nav.Link>
 
             {user && (
-              <Nav.Link as={NavLink} to="/moja-vozila">
-                Moja vozila
-              </Nav.Link>
+              <>
+                <Nav.Link as={NavLink} to="/moja-vozila">
+                  Moja vozila
+                </Nav.Link>
+
+                <Nav.Link as={NavLink} to="/zakazivanje">
+                  Zakazivanje
+                </Nav.Link>
+
+                <Nav.Link as={NavLink} to="/moja-zakazivanja">
+                  Moja zakazivanja
+                </Nav.Link>
+              </>
             )}
 
             {user ? (

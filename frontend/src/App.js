@@ -7,6 +7,8 @@ import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import VehiclesPage from "./pages/VehiclesPage";
+import BookingPage from "./pages/BookingPage";
+import AppointmentsPage from "./pages/AppointmentsPage";
 import "./App.css";
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
           <Route path="/prijava" element={<LoginPage />} />
           <Route path="/registracija" element={<RegisterPage />} />
           <Route path="/moja-vozila" element={<VehiclesPage />} />
+          <Route path="/zakazivanje" element={<BookingPage />} />
+          <Route path="/moja-zakazivanja" element={<AppointmentsPage />} />
         </Routes>
       </main>
 
