@@ -54,6 +54,12 @@ function Header() {
               </Nav.Link>
             )}
 
+            {user && (
+  <Nav.Link as={NavLink} to="/profil">
+    Moj profil
+  </Nav.Link>
+)}
+
             {user ? (
               <>
                 <Navbar.Text className="me-lg-3">

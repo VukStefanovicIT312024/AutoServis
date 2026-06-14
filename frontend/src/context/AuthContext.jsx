@@ -8,6 +8,8 @@ const defaultUsers = [
     email: "admin@test.com",
     password: "admin123",
     role: "admin",
+    phone: "",
+    city: "",
   },
 ];
 
@@ -55,6 +57,8 @@ export function AuthProvider({ children }) {
       name: foundUser.name,
       email: foundUser.email,
       role: foundUser.role,
+      phone: foundUser.phone || "",
+      city: foundUser.city || "",
     };
 
     localStorage.setItem("autoservisUser", JSON.stringify(loggedUser));
@@ -84,6 +88,8 @@ export function AuthProvider({ children }) {
       email: email.toLowerCase(),
       password,
       role: "user",
+      phone: "",
+      city: "",
     };
 
     const updatedUsers = [...users, newUser];
@@ -93,10 +99,43 @@ export function AuthProvider({ children }) {
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,
+      phone: newUser.phone,
+      city: newUser.city,
     };
 
     localStorage.setItem("autoservisUser", JSON.stringify(loggedUser));
     setUser(loggedUser);
+
+    return {
+      success: true,
+    };
+  }
+
+  function updateProfile(profileData) {
+    const users = getStoredUsers();
+
+    const updatedUsers = users.map((item) =>
+      item.email === user.email
+        ? {
+            ...item,
+            name: profileData.name,
+            phone: profileData.phone,
+            city: profileData.city,
+          }
+        : item
+    );
+
+    localStorage.setItem("autoservisUsers", JSON.stringify(updatedUsers));
+
+    const updatedUser = {
+      ...user,
+      name: profileData.name,
+      phone: profileData.phone,
+      city: profileData.city,
+    };
+
+    localStorage.setItem("autoservisUser", JSON.stringify(updatedUser));
+    setUser(updatedUser);
 
     return {
       success: true,
@@ -109,7 +148,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, login, register, updateProfile, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -10,6 +10,7 @@ import VehiclesPage from "./pages/VehiclesPage";
 import BookingPage from "./pages/BookingPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import AdminPage from "./pages/AdminPage";
+import ProfilePage from "./pages/ProfilePage";
 import "./App.css";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/zakazivanje" element={<BookingPage />} />
           <Route path="/moja-zakazivanja" element={<AppointmentsPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/profil" element={<ProfilePage />} />
         </Routes>
       </main>
 

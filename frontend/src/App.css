@@ -213,3 +213,31 @@
   color: #555;
   font-size: 14px;
 }
+
+.profile-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(20, 25, 30, 0.1);
+}
+
+.profile-card .card-body {
+  padding: 28px;
+}
+
+.profile-card h2 {
+  margin-bottom: 22px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.profile-info p {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-info p:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
