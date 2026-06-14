@@ -3,10 +3,11 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
+import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import VehiclesPage from "./pages/VehiclesPage";
 import "./App.css";
-import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/usluge/:id" element={<ServiceDetailsPage />} />
           <Route path="/prijava" element={<LoginPage />} />
           <Route path="/registracija" element={<RegisterPage />} />
+          <Route path="/moja-vozila" element={<VehiclesPage />} />
         </Routes>
       </main>
 

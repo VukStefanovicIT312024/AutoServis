@@ -32,6 +32,12 @@ function Header() {
               Usluge
             </Nav.Link>
 
+            {user && (
+              <Nav.Link as={NavLink} to="/moja-vozila">
+                Moja vozila
+              </Nav.Link>
+            )}
+
             {user ? (
               <>
                 <Navbar.Text className="me-lg-3">
