@@ -1,38 +1,55 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.home-hero {
+  min-height: calc(100vh - 112px);
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
+  background:
+    linear-gradient(rgba(15, 18, 22, 0.75), rgba(15, 18, 22, 0.75)),
+    url("https://images.unsplash.com/photo-1625047509248-ec889cbff17f?auto=format&fit=crop&w=1800&q=85")
+      center/cover no-repeat;
 }
 
-.App-link {
-  color: #61dafb;
+.home-hero-content {
+  max-width: 650px;
+  padding: 70px 0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.home-hero h1 {
+  margin-bottom: 18px;
+  font-size: 64px;
+  font-weight: 700;
+}
+
+.home-hero p {
+  max-width: 560px;
+  margin-bottom: 28px;
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+.hero-label {
+  color: #dc3545;
+  font-size: 14px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .home-hero h1 {
+    font-size: 44px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .home-hero p {
+    font-size: 17px;
   }
 }

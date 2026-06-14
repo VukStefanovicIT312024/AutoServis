@@ -1,0 +1,42 @@
+import { Container, Nav, Navbar } from "react-bootstrap";
+import { NavLink } from "react-router-dom";
+import { FaCar, FaSignInAlt, FaUserPlus } from "react-icons/fa";
+
+function Header() {
+  return (
+    <Navbar bg="dark" variant="dark" expand="lg">
+      <Container>
+        <Navbar.Brand as={NavLink} to="/">
+          <FaCar className="me-2" />
+          AutoServis
+        </Navbar.Brand>
+
+        <Navbar.Toggle aria-controls="main-navigation" />
+
+        <Navbar.Collapse id="main-navigation">
+          <Nav className="ms-auto">
+            <Nav.Link as={NavLink} to="/">
+              Početna
+            </Nav.Link>
+
+            <Nav.Link as={NavLink} to="/usluge">
+              Usluge
+            </Nav.Link>
+
+            <Nav.Link as={NavLink} to="/prijava">
+              <FaSignInAlt className="me-1" />
+              Prijava
+            </Nav.Link>
+
+            <Nav.Link as={NavLink} to="/registracija">
+              <FaUserPlus className="me-1" />
+              Registracija
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+}
+
+export default Header;
