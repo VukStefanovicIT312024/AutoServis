@@ -1,0 +1,86 @@
+const services = [
+  {
+    name: "Mali servis",
+    category: "Servis",
+    description: "Zamena ulja, filtera i osnovna kontrola vozila.",
+    price: 8000,
+    duration: 60,
+    includes: [
+      "Zamena motornog ulja",
+      "Zamena filtera ulja",
+      "Zamena filtera vazduha",
+      "Provera nivoa svih tečnosti",
+      "Kontrola kočnica i pneumatika",
+    ],
+  },
+  {
+    name: "Veliki servis",
+    category: "Servis",
+    description: "Kompletno održavanje ključnih delova motora.",
+    price: 28000,
+    duration: 180,
+    includes: [
+      "Zamena zupčastog kaiša",
+      "Zamena španera i rolera",
+      "Zamena pumpe za vodu",
+      "Zamena antifriza",
+      "Detaljna kontrola motora",
+    ],
+  },
+  {
+    name: "Kompjuterska dijagnostika",
+    category: "Dijagnostika",
+    description: "Provera elektronskih sistema i grešaka vozila.",
+    price: 3000,
+    duration: 30,
+    includes: [
+      "Očitavanje grešaka računara vozila",
+      "Provera senzora i elektronskih sistema",
+      "Brisanje zapamćenih grešaka",
+      "Izveštaj o pronađenim problemima",
+    ],
+  },
+  {
+    name: "Zamena ulja",
+    category: "Održavanje",
+    description: "Zamena motornog ulja prema specifikaciji proizvođača.",
+    price: 4500,
+    duration: 40,
+    includes: [
+      "Ispuštanje starog motornog ulja",
+      "Sipanje odgovarajućeg novog ulja",
+      "Provera nivoa ulja",
+      "Kontrola mogućeg curenja",
+    ],
+  },
+  {
+    name: "Priprema za tehnički pregled",
+    category: "Registracija",
+    description: "Pregled ispravnosti vozila pre tehničkog pregleda.",
+    price: 5000,
+    duration: 60,
+    includes: [
+      "Provera svetlosne signalizacije",
+      "Kontrola kočionog sistema",
+      "Provera pneumatika",
+      "Kontrola izduvnog sistema",
+      "Osnovna provera bezbednosti vozila",
+    ],
+  },
+  {
+    name: "Servis klima uređaja",
+    category: "Klima",
+    description: "Provera, čišćenje i dopuna klima uređaja.",
+    price: 6000,
+    duration: 50,
+    includes: [
+      "Provera rada klima uređaja",
+      "Provera pritiska sistema",
+      "Dopuna rashladnog gasa",
+      "Čišćenje i dezinfekcija sistema",
+      "Provera mogućeg curenja",
+    ],
+  },
+];
+
+export default services;
