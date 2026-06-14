@@ -1,8 +1,17 @@
-import { Container, Nav, Navbar } from "react-bootstrap";
-import { NavLink } from "react-router-dom";
+import { Button, Container, Nav, Navbar } from "react-bootstrap";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaCar, FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 function Header() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function logoutHandler() {
+    logout();
+    navigate("/");
+  }
+
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
@@ -14,7 +23,7 @@ function Header() {
         <Navbar.Toggle aria-controls="main-navigation" />
 
         <Navbar.Collapse id="main-navigation">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto align-items-lg-center">
             <Nav.Link as={NavLink} to="/">
               Početna
             </Nav.Link>
@@ -23,15 +32,33 @@ function Header() {
               Usluge
             </Nav.Link>
 
-            <Nav.Link as={NavLink} to="/prijava">
-              <FaSignInAlt className="me-1" />
-              Prijava
-            </Nav.Link>
+            {user ? (
+              <>
+                <Navbar.Text className="me-lg-3">
+                  {user.role === "admin" ? "Administrator" : user.name}
+                </Navbar.Text>
 
-            <Nav.Link as={NavLink} to="/registracija">
-              <FaUserPlus className="me-1" />
-              Registracija
-            </Nav.Link>
+                <Button
+                  variant="outline-light"
+                  size="sm"
+                  onClick={logoutHandler}
+                >
+                  Odjava
+                </Button>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={NavLink} to="/prijava">
+                  <FaSignInAlt className="me-1" />
+                  Prijava
+                </Nav.Link>
+
+                <Nav.Link as={NavLink} to="/registracija">
+                  <FaUserPlus className="me-1" />
+                  Registracija
+                </Nav.Link>
+              </>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>

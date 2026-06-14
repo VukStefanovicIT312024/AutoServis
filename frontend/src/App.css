@@ -134,3 +134,21 @@
   margin-right: 12px;
   color: #dc3545;
 }
+
+.auth-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(20, 25, 30, 0.12);
+}
+
+.auth-card .card-body {
+  padding: 32px;
+}
+
+.auth-note {
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f4f5f6;
+  font-size: 14px;
+  color: #555;
+}
