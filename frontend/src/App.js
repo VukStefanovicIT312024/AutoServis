@@ -6,6 +6,7 @@ import ServicesPage from "./pages/ServicesPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import "./App.css";
+import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/usluge" element={<ServicesPage />} />
+          <Route path="/usluge/:id" element={<ServiceDetailsPage />} />
           <Route path="/prijava" element={<LoginPage />} />
           <Route path="/registracija" element={<RegisterPage />} />
         </Routes>

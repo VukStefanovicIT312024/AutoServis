@@ -53,3 +53,84 @@
     font-size: 17px;
   }
 }
+
+.page-heading {
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+
+.page-heading h1 {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.section-label {
+  margin-bottom: 8px;
+  color: #dc3545;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.service-search {
+  max-width: 520px;
+  padding: 12px 16px;
+}
+
+.service-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(20, 25, 30, 0.12);
+}
+
+.service-icon {
+  margin-bottom: 18px;
+  color: #dc3545;
+  font-size: 28px;
+}
+
+.service-details {
+  max-width: 760px;
+}
+
+.service-description {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.service-includes {
+  margin: 32px 0;
+  padding: 28px;
+  border-left: 4px solid #dc3545;
+  background-color: #f4f5f6;
+}
+
+.service-includes h2 {
+  margin-bottom: 18px;
+  font-size: 24px;
+}
+
+.service-includes ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.service-includes li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.service-check {
+  flex-shrink: 0;
+  margin-right: 12px;
+  color: #dc3545;
+}
