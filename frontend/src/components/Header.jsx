@@ -32,7 +32,7 @@ function Header() {
               Usluge
             </Nav.Link>
 
-            {user && (
+            {user && user.role === "user" && (
               <>
                 <Nav.Link as={NavLink} to="/moja-vozila">
                   Moja vozila
@@ -46,6 +46,12 @@ function Header() {
                   Moja zakazivanja
                 </Nav.Link>
               </>
+            )}
+
+            {user && user.role === "admin" && (
+              <Nav.Link as={NavLink} to="/admin">
+                Admin panel
+              </Nav.Link>
             )}
 
             {user ? (

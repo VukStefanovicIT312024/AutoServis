@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import VehiclesPage from "./pages/VehiclesPage";
 import BookingPage from "./pages/BookingPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import AdminPage from "./pages/AdminPage";
 import "./App.css";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/moja-vozila" element={<VehiclesPage />} />
           <Route path="/zakazivanje" element={<BookingPage />} />
           <Route path="/moja-zakazivanja" element={<AppointmentsPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
 
