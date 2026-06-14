@@ -29,7 +29,7 @@ function ServiceCard({ service }) {
 
           <Button
             as={Link}
-            to={`/usluge/${service.id}`}
+            to={`/usluge/${service._id}`}
             variant="outline-danger"
           >
             Detaljnije
