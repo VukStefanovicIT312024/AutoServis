@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
-import { Alert, Button, Card, Col, Container, Form, Row, Table } from "react-bootstrap";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 
 function VehiclesPage() {
@@ -11,90 +13,134 @@ function VehiclesPage() {
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
+  const [editingId, setEditingId] = useState(null);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const savedVehicles = localStorage.getItem("autoservisVehicles");
-    const allVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
+  const fetchVehicles = useCallback(async function () {
+    try {
+      setLoading(true);
 
-    if (user) {
-      const userVehicles = allVehicles.filter(
-        (vehicle) => vehicle.ownerEmail === user.email
-      );
+      const response = await fetch(`${API_URL}/api/vehicles`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-      setVehicles(userVehicles);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Greška pri učitavanju vozila.");
+      }
+
+      setVehicles(data);
+      setError("");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
 
-  function saveVehicles(updatedUserVehicles) {
-    const savedVehicles = localStorage.getItem("autoservisVehicles");
-    const allVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
-
-    const otherUsersVehicles = allVehicles.filter(
-      (vehicle) => vehicle.ownerEmail !== user.email
-    );
-
-    const updatedAllVehicles = [...otherUsersVehicles, ...updatedUserVehicles];
-
-    localStorage.setItem("autoservisVehicles", JSON.stringify(updatedAllVehicles));
-    setVehicles(updatedUserVehicles);
+  useEffect(() => {
+  if (user) {
+    fetchVehicles();
   }
+}, [user, fetchVehicles]);
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
 
-    if (!brand || !model || !year || !plateNumber) {
-      setError("Sva polja su obavezna.");
-      return;
-    }
-
-    if (Number(year) < 1980 || Number(year) > 2026) {
-      setError("Godina proizvodnje mora biti između 1980. i 2026.");
-      return;
-    }
-
-    const newVehicle = {
-      id: Date.now(),
+    const vehicleData = {
       brand,
       model,
-      year,
+      year: Number(year),
       plateNumber,
-      ownerEmail: user.email,
     };
 
-    const updatedVehicles = [...vehicles, newVehicle];
+    const url = editingId
+      ? `${API_URL}/api/vehicles/${editingId}`
+      : `${API_URL}/api/vehicles`;
 
-    saveVehicles(updatedVehicles);
+    const method = editingId ? "PUT" : "POST";
 
-    setBrand("");
-    setModel("");
-    setYear("");
-    setPlateNumber("");
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(vehicleData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Greška pri čuvanju vozila.");
+      }
+
+      setBrand("");
+      setModel("");
+      setYear("");
+      setPlateNumber("");
+      setEditingId(null);
+      setMessage(editingId ? "Vozilo je izmenjeno." : "Vozilo je dodato.");
+      setError("");
+
+      fetchVehicles();
+    } catch (error) {
+      setError(error.message);
+      setMessage("");
+    }
+  }
+
+  function editVehicle(vehicle) {
+    setBrand(vehicle.brand);
+    setModel(vehicle.model);
+    setYear(vehicle.year);
+    setPlateNumber(vehicle.plateNumber);
+    setEditingId(vehicle._id);
+    setMessage("");
     setError("");
   }
 
-  function deleteVehicle(id) {
-    const updatedVehicles = vehicles.filter((vehicle) => vehicle.id !== id);
-    saveVehicles(updatedVehicles);
+  async function deleteVehicle(id) {
+    try {
+      const response = await fetch(`${API_URL}/api/vehicles/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Greška pri brisanju vozila.");
+      }
+
+      setVehicles(vehicles.filter((vehicle) => vehicle._id !== id));
+      setMessage("Vozilo je obrisano.");
+      setError("");
+    } catch (error) {
+      setError(error.message);
+      setMessage("");
+    }
   }
 
   if (!user) {
     return (
       <Container className="py-5">
-        <Card className="info-card">
-          <Card.Body>
-            <p className="section-label">Zaštićena stranica</p>
-            <h1>Moja vozila</h1>
-            <p>
-              Da biste dodali i pregledali svoja vozila, potrebno je da se prvo
-              prijavite.
-            </p>
+        <Alert variant="warning">
+          Morate biti prijavljeni da biste upravljali vozilima.
+        </Alert>
 
-            <Button as={Link} to="/prijava" variant="danger">
-              Prijava
-            </Button>
-          </Card.Body>
-        </Card>
+        <Button as={Link} to="/prijava" variant="danger">
+          Idi na prijavu
+        </Button>
       </Container>
     );
   }
@@ -104,111 +150,110 @@ function VehiclesPage() {
       <div className="page-heading">
         <p className="section-label">Korisnički deo</p>
         <h1>Moja vozila</h1>
-        <p>
-          Dodajte vozila za koja želite da zakažete servis, popravku ili drugu
-          uslugu.
-        </p>
+        <p>Dodajte vozila za koja želite da zakazujete servisne usluge.</p>
       </div>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+      {message && <Alert variant="success">{message}</Alert>}
 
       <Row className="g-4">
         <Col lg={5}>
-          <Card className="form-card">
-            <Card.Body>
-              <h2>Dodavanje vozila</h2>
+          <div className="form-panel">
+            <h2>{editingId ? "Izmena vozila" : "Dodaj vozilo"}</h2>
 
-              {error && <Alert variant="danger">{error}</Alert>}
+            <Form onSubmit={submitHandler}>
+              <Form.Group className="mb-3">
+                <Form.Label>Marka</Form.Label>
+                <Form.Control
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  placeholder="npr. Volkswagen"
+                  required
+                />
+              </Form.Group>
 
-              <Form onSubmit={submitHandler}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Marka vozila</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Na primer: Volkswagen"
-                    value={brand}
-                    onChange={(event) => setBrand(event.target.value)}
-                  />
-                </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Model</Form.Label>
+                <Form.Control
+                  value={model}
+                  onChange={(event) => setModel(event.target.value)}
+                  placeholder="npr. Golf 7"
+                  required
+                />
+              </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Model</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Na primer: Golf 7"
-                    value={model}
-                    onChange={(event) => setModel(event.target.value)}
-                  />
-                </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Godina proizvodnje</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={year}
+                  onChange={(event) => setYear(event.target.value)}
+                  placeholder="npr. 2018"
+                  required
+                />
+              </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Godina proizvodnje</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Na primer: 2018"
-                    value={year}
-                    onChange={(event) => setYear(event.target.value)}
-                  />
-                </Form.Group>
+              <Form.Group className="mb-4">
+                <Form.Label>Registracija</Form.Label>
+                <Form.Control
+                  value={plateNumber}
+                  onChange={(event) => setPlateNumber(event.target.value)}
+                  placeholder="npr. NS-123-AA"
+                  required
+                />
+              </Form.Group>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Registarska oznaka</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Na primer: NS-123-AA"
-                    value={plateNumber}
-                    onChange={(event) => setPlateNumber(event.target.value)}
-                  />
-                </Form.Group>
-
-                <Button type="submit" variant="danger" className="w-100">
-                  Sačuvaj vozilo
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
+              <Button type="submit" variant="danger">
+                {editingId ? "Sačuvaj izmene" : "Dodaj vozilo"}
+              </Button>
+            </Form>
+          </div>
         </Col>
 
         <Col lg={7}>
-          <Card className="table-card">
-            <Card.Body>
-              <h2>Lista vozila</h2>
+          {loading ? (
+            <div className="text-center py-5">
+              <Spinner animation="border" variant="danger" />
+              <p className="mt-3">Učitavanje vozila...</p>
+            </div>
+          ) : (
+            <div className="vehicle-list">
+              {vehicles.map((vehicle) => (
+                <div className="vehicle-item" key={vehicle._id}>
+                  <div>
+                    <h3>
+                      {vehicle.brand} {vehicle.model}
+                    </h3>
+                    <p>
+                      {vehicle.year}. godište | {vehicle.plateNumber}
+                    </p>
+                  </div>
 
-              {vehicles.length === 0 ? (
-                <p className="mb-0">Još uvek nemate dodata vozila.</p>
-              ) : (
-                <Table responsive hover>
-                  <thead>
-                    <tr>
-                      <th>Marka</th>
-                      <th>Model</th>
-                      <th>Godina</th>
-                      <th>Registracija</th>
-                      <th></th>
-                    </tr>
-                  </thead>
+                  <div className="vehicle-actions">
+                    <Button
+                      variant="outline-dark"
+                      size="sm"
+                      onClick={() => editVehicle(vehicle)}
+                    >
+                      <FaEdit />
+                    </Button>
 
-                  <tbody>
-                    {vehicles.map((vehicle) => (
-                      <tr key={vehicle.id}>
-                        <td>{vehicle.brand}</td>
-                        <td>{vehicle.model}</td>
-                        <td>{vehicle.year}</td>
-                        <td>{vehicle.plateNumber}</td>
-                        <td className="text-end">
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => deleteVehicle(vehicle.id)}
-                          >
-                            Obriši
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => deleteVehicle(vehicle._id)}
+                    >
+                      <FaTrash />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {vehicles.length === 0 && (
+                <p className="text-muted">Još uvek nemate dodata vozila.</p>
               )}
-            </Card.Body>
-          </Card>
+            </div>
+          )}
         </Col>
       </Row>
     </Container>
