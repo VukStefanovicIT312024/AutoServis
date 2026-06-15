@@ -13,7 +13,7 @@ function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
 
     if (!name || !email || !password || !confirmPassword) {
@@ -31,7 +31,7 @@ function RegisterPage() {
       return;
     }
 
-    const result = register(name, email, password);
+    const result = await register(name, email, password);
 
 if (!result.success) {
   setError(result.message);

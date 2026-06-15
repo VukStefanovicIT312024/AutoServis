@@ -11,7 +11,7 @@ function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
 
     if (!email || !password) {
@@ -24,7 +24,7 @@ function LoginPage() {
       return;
     }
 
-    const result = login(email, password);
+    const result = await login(email, password);
 
 if (!result.success) {
   setError(result.message);

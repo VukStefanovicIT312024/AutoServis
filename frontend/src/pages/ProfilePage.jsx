@@ -12,7 +12,7 @@ function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
 
     if (!name) {
@@ -21,14 +21,20 @@ function ProfilePage() {
       return;
     }
 
-    updateProfile({
-      name,
-      phone,
-      city,
-    });
+    const result = await updateProfile({
+  name,
+  phone,
+  city,
+});
 
-    setError("");
-    setMessage("Podaci profila su uspešno sačuvani.");
+if (!result.success) {
+  setError(result.message);
+  setMessage("");
+  return;
+}
+
+setError("");
+setMessage("Podaci profila su uspešno sačuvani.");
   }
 
   if (!user) {

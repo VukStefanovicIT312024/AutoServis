@@ -1,35 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 const AuthContext = createContext();
-
-const defaultUsers = [
-  {
-    name: "Administrator",
-    email: "admin@test.com",
-    password: "admin123",
-    role: "admin",
-    phone: "",
-    city: "",
-  },
-];
-
-function getStoredUsers() {
-  const savedUsers = localStorage.getItem("autoservisUsers");
-
-  if (savedUsers) {
-    return JSON.parse(savedUsers);
-  }
-
-  localStorage.setItem("autoservisUsers", JSON.stringify(defaultUsers));
-  return defaultUsers;
-}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    getStoredUsers();
-
     const savedUser = localStorage.getItem("autoservisUser");
 
     if (savedUser) {
@@ -37,109 +14,104 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  function login(email, password) {
-    const users = getStoredUsers();
+  async function login(email, password) {
+    try {
+      const response = await fetch(`${API_URL}/api/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const foundUser = users.find(
-      (item) =>
-        item.email.toLowerCase() === email.toLowerCase() &&
-        item.password === password
-    );
+      const data = await response.json();
 
-    if (!foundUser) {
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || "Prijava nije uspela.",
+        };
+      }
+
+      localStorage.setItem("autoservisUser", JSON.stringify(data));
+      setUser(data);
+
+      return {
+        success: true,
+      };
+    } catch (error) {
       return {
         success: false,
-        message: "Korisnik nije pronađen ili lozinka nije ispravna.",
+        message: "Greška pri povezivanju sa serverom.",
       };
     }
-
-    const loggedUser = {
-      name: foundUser.name,
-      email: foundUser.email,
-      role: foundUser.role,
-      phone: foundUser.phone || "",
-      city: foundUser.city || "",
-    };
-
-    localStorage.setItem("autoservisUser", JSON.stringify(loggedUser));
-    setUser(loggedUser);
-
-    return {
-      success: true,
-    };
   }
 
-  function register(name, email, password) {
-    const users = getStoredUsers();
+  async function register(name, email, password) {
+    try {
+      const response = await fetch(`${API_URL}/api/users/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    const userExists = users.some(
-      (item) => item.email.toLowerCase() === email.toLowerCase()
-    );
+      const data = await response.json();
 
-    if (userExists) {
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || "Registracija nije uspela.",
+        };
+      }
+
+      localStorage.setItem("autoservisUser", JSON.stringify(data));
+      setUser(data);
+
+      return {
+        success: true,
+      };
+    } catch (error) {
       return {
         success: false,
-        message: "Korisnik sa ovom email adresom već postoji.",
+        message: "Greška pri povezivanju sa serverom.",
       };
     }
-
-    const newUser = {
-      name,
-      email: email.toLowerCase(),
-      password,
-      role: "user",
-      phone: "",
-      city: "",
-    };
-
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem("autoservisUsers", JSON.stringify(updatedUsers));
-
-    const loggedUser = {
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      phone: newUser.phone,
-      city: newUser.city,
-    };
-
-    localStorage.setItem("autoservisUser", JSON.stringify(loggedUser));
-    setUser(loggedUser);
-
-    return {
-      success: true,
-    };
   }
 
-  function updateProfile(profileData) {
-    const users = getStoredUsers();
+  async function updateProfile(profileData) {
+    try {
+      const response = await fetch(`${API_URL}/api/users/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(profileData),
+      });
 
-    const updatedUsers = users.map((item) =>
-      item.email === user.email
-        ? {
-            ...item,
-            name: profileData.name,
-            phone: profileData.phone,
-            city: profileData.city,
-          }
-        : item
-    );
+      const data = await response.json();
 
-    localStorage.setItem("autoservisUsers", JSON.stringify(updatedUsers));
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || "Izmena profila nije uspela.",
+        };
+      }
 
-    const updatedUser = {
-      ...user,
-      name: profileData.name,
-      phone: profileData.phone,
-      city: profileData.city,
-    };
+      localStorage.setItem("autoservisUser", JSON.stringify(data));
+      setUser(data);
 
-    localStorage.setItem("autoservisUser", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-
-    return {
-      success: true,
-    };
+      return {
+        success: true,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Greška pri povezivanju sa serverom.",
+      };
+    }
   }
 
   function logout() {
