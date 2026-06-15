@@ -7,9 +7,10 @@ import {
   Container,
   Form,
   Row,
+  Spinner,
 } from "react-bootstrap";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import services from "../data/services";
+import { API_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 
 function BookingPage() {
@@ -20,27 +21,65 @@ function BookingPage() {
   const selectedServiceId = searchParams.get("serviceId");
 
   const [vehicles, setVehicles] = useState([]);
+  const [services, setServices] = useState([]);
   const [serviceId, setServiceId] = useState(selectedServiceId || "");
   const [vehicleId, setVehicleId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [description, setDescription] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const savedVehicles = localStorage.getItem("autoservisVehicles");
-    const allVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
+    async function fetchData() {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-    if (user) {
-      const userVehicles = allVehicles.filter(
-        (vehicle) => vehicle.ownerEmail === user.email
-      );
+      try {
+        setLoading(true);
 
-      setVehicles(userVehicles);
+        const [vehiclesResponse, servicesResponse] = await Promise.all([
+          fetch(`${API_URL}/api/vehicles`, {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }),
+          fetch(`${API_URL}/api/services`),
+        ]);
+
+        const vehiclesData = await vehiclesResponse.json();
+        const servicesData = await servicesResponse.json();
+
+        if (!vehiclesResponse.ok) {
+          throw new Error(
+            vehiclesData.message || "Greška pri učitavanju vozila."
+          );
+        }
+
+        if (!servicesResponse.ok) {
+          throw new Error(
+            servicesData.message || "Greška pri učitavanju usluga."
+          );
+        }
+
+        setVehicles(vehiclesData);
+        setServices(servicesData);
+        setError("");
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchData();
   }, [user]);
 
-  function submitHandler(event) {
+  async function submitHandler(event) {
     event.preventDefault();
 
     if (!serviceId || !vehicleId || !date || !time) {
@@ -48,42 +87,36 @@ function BookingPage() {
       return;
     }
 
-    const selectedService = services.find(
-      (service) => service.id === Number(serviceId)
-    );
+    try {
+      setSaving(true);
 
-    const selectedVehicle = vehicles.find(
-      (vehicle) => vehicle.id === Number(vehicleId)
-    );
+      const response = await fetch(`${API_URL}/api/appointments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          service: serviceId,
+          vehicle: vehicleId,
+          date,
+          time,
+          description,
+        }),
+      });
 
-    const newAppointment = {
-      id: Date.now(),
-      userEmail: user.email,
-      userName: user.name,
-      serviceId: selectedService.id,
-      serviceName: selectedService.name,
-      vehicleId: selectedVehicle.id,
-      vehicleName: `${selectedVehicle.brand} ${selectedVehicle.model}`,
-      plateNumber: selectedVehicle.plateNumber,
-      date,
-      time,
-      description,
-      status: "Zakazano",
-    };
+      const data = await response.json();
 
-    const savedAppointments = localStorage.getItem("autoservisAppointments");
-    const appointments = savedAppointments
-      ? JSON.parse(savedAppointments)
-      : [];
+      if (!response.ok) {
+        throw new Error(data.message || "Zakazivanje nije uspelo.");
+      }
 
-    const updatedAppointments = [...appointments, newAppointment];
-
-    localStorage.setItem(
-      "autoservisAppointments",
-      JSON.stringify(updatedAppointments)
-    );
-
-    navigate("/moja-zakazivanja");
+      navigate("/moja-zakazivanja");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!user) {
@@ -103,6 +136,15 @@ function BookingPage() {
             </Button>
           </Card.Body>
         </Card>
+      </Container>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" variant="danger" />
+        <p className="mt-3">Učitavanje podataka za zakazivanje...</p>
       </Container>
     );
   }
@@ -153,7 +195,7 @@ function BookingPage() {
                   >
                     <option value="">Izaberite uslugu</option>
                     {services.map((service) => (
-                      <option key={service.id} value={service.id}>
+                      <option key={service._id} value={service._id}>
                         {service.name} - {service.price.toLocaleString("sr-RS")} RSD
                       </option>
                     ))}
@@ -168,7 +210,7 @@ function BookingPage() {
                   >
                     <option value="">Izaberite vozilo</option>
                     {vehicles.map((vehicle) => (
-                      <option key={vehicle.id} value={vehicle.id}>
+                      <option key={vehicle._id} value={vehicle._id}>
                         {vehicle.brand} {vehicle.model} - {vehicle.plateNumber}
                       </option>
                     ))}
@@ -219,8 +261,8 @@ function BookingPage() {
                   />
                 </Form.Group>
 
-                <Button type="submit" variant="danger" size="lg">
-                  Potvrdi zakazivanje
+                <Button type="submit" variant="danger" size="lg" disabled={saving}>
+                  {saving ? "Zakazivanje..." : "Potvrdi zakazivanje"}
                 </Button>
               </Form>
             </Card.Body>
