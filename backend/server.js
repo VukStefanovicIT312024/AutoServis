@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 app.get("/", (req, res) => {
   res.send("AutoServis API is running...");

@@ -37,8 +37,8 @@ const appointmentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Zakazano", "U obradi", "Završeno", "Otkazano"],
-      default: "Zakazano",
+      enum: ["zakazano", "u_obradi", "zavrseno", "otkazano"],
+      default: "zakazano",
     },
   },
   {
