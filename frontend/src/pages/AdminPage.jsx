@@ -8,44 +8,141 @@ import {
   Container,
   Form,
   Row,
+  Spinner,
   Table,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
-import services from "../data/services";
 
 function AdminPage() {
   const { user } = useAuth();
 
   const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const savedUsers = localStorage.getItem("autoservisUsers");
-    const savedAppointments = localStorage.getItem("autoservisAppointments");
+    async function fetchAdminData() {
+      if (!user || user.role !== "admin") {
+        setLoading(false);
+        return;
+      }
 
-    setUsers(savedUsers ? JSON.parse(savedUsers) : []);
-    setAppointments(savedAppointments ? JSON.parse(savedAppointments) : []);
-  }, []);
+      try {
+        setLoading(true);
 
-  function deleteUser(email) {
-    const updatedUsers = users.filter((item) => item.email !== email);
+        const headers = {
+          Authorization: `Bearer ${user.token}`,
+        };
 
-    localStorage.setItem("autoservisUsers", JSON.stringify(updatedUsers));
-    setUsers(updatedUsers);
+        const [usersResponse, servicesResponse, appointmentsResponse] =
+          await Promise.all([
+            fetch(`${API_URL}/api/users`, { headers }),
+            fetch(`${API_URL}/api/services`),
+            fetch(`${API_URL}/api/appointments/admin`, { headers }),
+          ]);
+
+        const usersData = await usersResponse.json();
+        const servicesData = await servicesResponse.json();
+        const appointmentsData = await appointmentsResponse.json();
+
+        if (!usersResponse.ok) {
+          throw new Error(usersData.message || "Greška pri učitavanju korisnika.");
+        }
+
+        if (!servicesResponse.ok) {
+          throw new Error(servicesData.message || "Greška pri učitavanju usluga.");
+        }
+
+        if (!appointmentsResponse.ok) {
+          throw new Error(
+            appointmentsData.message || "Greška pri učitavanju zakazivanja."
+          );
+        }
+
+        setUsers(usersData);
+        setServices(servicesData);
+        setAppointments(appointmentsData);
+        setError("");
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAdminData();
+  }, [user]);
+
+  async function deleteUser(id) {
+    try {
+      const response = await fetch(`${API_URL}/api/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Brisanje korisnika nije uspelo.");
+      }
+
+      setUsers(users.filter((item) => item._id !== id));
+      setError("");
+    } catch (error) {
+      setError(error.message);
+    }
   }
 
-  function changeAppointmentStatus(id, status) {
-    const updatedAppointments = appointments.map((appointment) =>
-      appointment.id === id ? { ...appointment, status } : appointment
-    );
+  async function changeAppointmentStatus(id, status) {
+    try {
+      const response = await fetch(`${API_URL}/api/appointments/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
 
-    localStorage.setItem(
-      "autoservisAppointments",
-      JSON.stringify(updatedAppointments)
-    );
+      const data = await response.json();
 
-    setAppointments(updatedAppointments);
+      if (!response.ok) {
+        throw new Error(data.message || "Promena statusa nije uspela.");
+      }
+
+      setAppointments(
+        appointments.map((appointment) =>
+          appointment._id === id ? { ...appointment, status: data.status } : appointment
+        )
+      );
+      setError("");
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
+  function getStatusLabel(status) {
+    const labels = {
+      zakazano: "Zakazano",
+      u_obradi: "U obradi",
+      zavrseno: "Završeno",
+      otkazano: "Otkazano",
+    };
+
+    return labels[status] || status;
+  }
+
+  function getStatusVariant(status) {
+    if (status === "zakazano") return "success";
+    if (status === "u_obradi") return "warning";
+    if (status === "zavrseno") return "primary";
+    return "secondary";
   }
 
   if (!user) {
@@ -76,6 +173,15 @@ function AdminPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" variant="danger" />
+        <p className="mt-3">Učitavanje admin panela...</p>
+      </Container>
+    );
+  }
+
   return (
     <Container className="py-5">
       <div className="page-heading">
@@ -85,6 +191,8 @@ function AdminPage() {
           Pregled korisnika, usluga i svih zakazanih termina u aplikaciji.
         </p>
       </div>
+
+      {error && <Alert variant="danger">{error}</Alert>}
 
       <Row className="g-4 mb-4">
         <Col md={4}>
@@ -134,7 +242,7 @@ function AdminPage() {
 
               <tbody>
                 {users.map((item) => (
-                  <tr key={item.email}>
+                  <tr key={item._id}>
                     <td>{item.name}</td>
                     <td>{item.email}</td>
                     <td>
@@ -147,7 +255,7 @@ function AdminPage() {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => deleteUser(item.email)}
+                          onClick={() => deleteUser(item._id)}
                         >
                           Obriši
                         </Button>
@@ -177,7 +285,7 @@ function AdminPage() {
 
             <tbody>
               {services.map((service) => (
-                <tr key={service.id}>
+                <tr key={service._id}>
                   <td>{service.name}</td>
                   <td>{service.category}</td>
                   <td>{service.duration} min</td>
@@ -186,11 +294,6 @@ function AdminPage() {
               ))}
             </tbody>
           </Table>
-
-          <p className="admin-note">
-            U KT2 usluge se prikazuju iz frontend podataka, dok će u KT3 biti
-            povezane sa MongoDB bazom i REST API rutama.
-          </p>
         </Card.Body>
       </Card>
 
@@ -215,36 +318,42 @@ function AdminPage() {
 
               <tbody>
                 {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
+                  <tr key={appointment._id}>
                     <td>
-                      {appointment.userName}
+                      {appointment.user?.name}
                       <br />
-                      <small>{appointment.userEmail}</small>
+                      <small>{appointment.user?.email}</small>
                     </td>
-                    <td>{appointment.serviceName}</td>
+                    <td>{appointment.service?.name}</td>
                     <td>
-                      {appointment.vehicleName}
+                      {appointment.vehicle?.brand} {appointment.vehicle?.model}
                       <br />
-                      <small>{appointment.plateNumber}</small>
+                      <small>{appointment.vehicle?.plateNumber}</small>
                     </td>
                     <td>{appointment.date}</td>
                     <td>{appointment.time}</td>
                     <td>
-                      <Form.Select
-                        size="sm"
-                        value={appointment.status}
-                        onChange={(event) =>
-                          changeAppointmentStatus(
-                            appointment.id,
-                            event.target.value
-                          )
-                        }
-                      >
-                        <option value="Zakazano">Zakazano</option>
-                        <option value="U obradi">U obradi</option>
-                        <option value="Završeno">Završeno</option>
-                        <option value="Otkazano">Otkazano</option>
-                      </Form.Select>
+                      <div className="d-flex align-items-center gap-2">
+                        <Badge bg={getStatusVariant(appointment.status)}>
+                          {getStatusLabel(appointment.status)}
+                        </Badge>
+
+                        <Form.Select
+                          size="sm"
+                          value={appointment.status}
+                          onChange={(event) =>
+                            changeAppointmentStatus(
+                              appointment._id,
+                              event.target.value
+                            )
+                          }
+                        >
+                          <option value="zakazano">Zakazano</option>
+                          <option value="u_obradi">U obradi</option>
+                          <option value="zavrseno">Završeno</option>
+                          <option value="otkazano">Otkazano</option>
+                        </Form.Select>
+                      </div>
                     </td>
                   </tr>
                 ))}
