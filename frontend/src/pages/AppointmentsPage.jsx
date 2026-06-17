@@ -144,6 +144,7 @@ function AppointmentsPage() {
                 <tr>
                   <th>Usluga</th>
                   <th>Vozilo</th>
+                  <th>Napomena</th>
                   <th>Datum</th>
                   <th>Vreme</th>
                   <th>Status</th>
@@ -160,6 +161,7 @@ function AppointmentsPage() {
                       <br />
                       <small>{appointment.vehicle?.plateNumber}</small>
                     </td>
+                    <td>{appointment.description || "Nema napomene"}</td>
                     <td>{appointment.date}</td>
                     <td>{appointment.time}</td>
                     <td>

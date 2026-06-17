@@ -13,6 +13,17 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { API_URL } from "../config";
 import { useAuth } from "../context/AuthContext";
 
+function getTomorrowDateString() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const day = String(tomorrow.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function BookingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +42,8 @@ function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const minAppointmentDate = getTomorrowDateString();
 
   useEffect(() => {
     async function fetchData() {
@@ -86,6 +99,11 @@ function BookingPage() {
       setError("Usluga, vozilo, datum i vreme su obavezni.");
       return;
     }
+
+    if (date < minAppointmentDate) {
+  setError("Termin može biti zakazan najranije za sutrašnji datum.");
+  return;
+}
 
     try {
       setSaving(true);
@@ -222,9 +240,10 @@ function BookingPage() {
                     <Form.Group className="mb-3">
                       <Form.Label>Datum</Form.Label>
                       <Form.Control
-                        type="date"
-                        value={date}
-                        onChange={(event) => setDate(event.target.value)}
+                      type="date"
+                      min={minAppointmentDate}
+                      value={date}
+                      onChange={(event) => setDate(event.target.value)}
                       />
                     </Form.Group>
                   </Col>

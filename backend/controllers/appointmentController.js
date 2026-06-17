@@ -15,6 +15,17 @@ async function getMyAppointments(req, res) {
   }
 }
 
+function getTomorrowDateString() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const day = String(tomorrow.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 async function createAppointment(req, res) {
   try {
     const { vehicle, service, date, time, description } = req.body;
@@ -24,6 +35,14 @@ async function createAppointment(req, res) {
         message: "Vozilo, usluga, datum i vreme su obavezni.",
       });
     }
+
+    const minDate = getTomorrowDateString();
+
+if (date < minDate) {
+  return res.status(400).json({
+    message: "Termin može biti zakazan najranije za sutrašnji datum.",
+  });
+}
 
     const existingVehicle = await Vehicle.findOne({
       _id: vehicle,
